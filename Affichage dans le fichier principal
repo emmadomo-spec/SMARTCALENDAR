@@ -1,0 +1,18 @@
+import flet as ft
+from composant_ui import DashboardView, AuthView
+
+def main(page: ft.Page):
+    page.title = "SmartCalendrier - Phase 2 (POO)"
+    page.padding = 10
+    
+    # Pour tester le Dashboard de l'exercice 10 :
+    page.add(DashboardView())
+    
+    # NOTE : Si tu veux tester l'écran de connexion (Exercice 8), 
+    # commente la ligne du dessus et décommente les 2 lignes suivantes :
+    # def simuler_navigation():
+    #     print("Connexion réussie !")
+    # page.add(AuthView(on_login_success=simuler_navigation))
+
+if __name__ == "__main__":
+    ft.app(target=main)
