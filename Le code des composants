@@ -1,0 +1,136 @@
+import flet as ft
+
+class PrimaryButton(ft.ElevatedButton):
+    def __init__(self, text: str, on_click=None):
+        super().__init__()
+        self.text = text
+        self.on_click = on_click
+        # Style par défaut imposé
+        self.color = ft.colors.WHITE
+        self.bgcolor = ft.colors.BLUE_700
+        self.style = ft.ButtonStyle(
+            shape=ft.RoundedRectangleBorder(radius=8)
+        )
+
+class StatCard(ft.Container):
+    def __init__(self, titre: str, valeur: str, icone: str):
+        super().__init__()
+        self.bgcolor = ft.colors.WHITE
+        self.padding = 15
+        self.border_radius = 10
+        self.shadow = ft.BoxShadow(blur_radius=5, color=ft.colors.BLACK12)
+        self.width = 180
+        
+        # Structure interne de la carte
+        self.content = ft.Column(
+            controls=[
+                ft.Row(
+                    controls=[
+                        ft.Icon(icone, color=ft.colors.BLUE_700, size=24),
+                        ft.Text(titre, size=14, color=ft.colors.GREY_700, weight=ft.FontWeight.W_500)
+                    ],
+                    alignment=ft.MainAxisAlignment.START,
+                    spacing=10
+                ),
+                ft.Text(valeur, size=24, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_900)
+            ],
+            spacing=10
+        )
+
+class AuthView(ft.Container):
+    def __init__(self, on_login_success):
+        super().__init__()
+        self.on_login_success = on_login_success # Callback pour naviguer après connexion
+        self.alignment = ft.alignment.center
+        self.expand = True
+        
+        # Champs du formulaire
+        self.email_input = ft.TextField(label="Email", width=300)
+        self.password_input = ft.TextField(label="Mot de passe", password=True, can_reveal_password=True, width=300)
+        self.error_message = ft.Text("", color=ft.colors.RED, weight=ft.FontWeight.BOLD)
+        
+        # Assemblage dans le conteneur
+        self.content = ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Text("Connexion à SmartCalendrier", size=22, weight=ft.FontWeight.BOLD),
+                    self.email_input,
+                    self.password_input,
+                    self.error_message,
+                    PrimaryButton(text="Se connecter", on_click=self.valider_saisie)
+                ],
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=15
+            ),
+            padding=30,
+            bgcolor=ft.colors.GREY_50,
+            border_radius=12,
+            border=ft.border.all(1, ft.colors.GREY_300)
+        )
+
+    def valider_saisie(self, e):
+        # Vérification si les champs sont vides
+        if not self.email_input.value or not self.password_input.value:
+            self.error_message.value = "Erreur : Tous les champs sont obligatoires !"
+            self.page.update()
+        else:
+            self.error_message.value = ""
+            # Si valide, on déclenche le callback de succès (qui servira pour la Phase 4)
+            if self.on_login_success:
+                self.on_login_success()
+
+class SidebarComponent:
+    def __init__(self, on_change_page=None):
+        self.on_change_page = on_change_page
+
+    def build(self):
+        return ft.NavigationRail(
+            selected_index=0,
+            label_type=ft.NavigationRailLabelType.ALL,
+            min_width=100,
+            destinations=[
+                ft.NavigationRailDestination(icon=ft.icons.DASHBOARD_OUTLINED, selected_icon=ft.icons.DASHBOARD, label="Dashboard"),
+                ft.NavigationRailDestination(icon=ft.icons.CALENDAR_MONTH_OUTLINED, selected_icon=ft.icons.CALENDAR_MONTH, label="Calendrier"),
+                ft.NavigationRailDestination(icon=ft.icons.SETTINGS_OUTLINED, selected_icon=ft.icons.SETTINGS, label="Réglages"),
+            ]
+        )
+
+class DashboardView(ft.Row):
+    def __init__(self):
+        super().__init__()
+        self.expand = True
+        
+        # Instance du menu à gauche
+        self.sidebar = SidebarComponent().build()
+        
+        # Zone de contenu à droite avec les 3 cartes statistiques
+        self.main_content = ft.Container(
+            content=ft.Column(
+                controls=[
+                    ft.Text("Tableau de Bord - SmartCalendrier", size=24, weight=ft.FontWeight.BOLD),
+                    ft.Divider(height=20),
+                    ft.Text("Vos statistiques en temps réel :", size=16, weight=ft.FontWeight.W_500),
+                    # Alignement des 3 StatCards
+                    ft.Row(
+                        controls=[
+                            StatCard(titre="Cours aujourd'hui", valeur="3", icone=ft.icons.MENU_BOOK),
+                            StatCard(titre="Heures de cours", valeur="6h", icone=ft.icons.ACCESS_TIME),
+                            StatCard(titre="Salles occupées", valeur="2", icone=ft.icons.ROOM),
+                        ],
+                        spacing=20,
+                        wrap=True
+                    )
+                ],
+                spacing=15
+            ),
+            bgcolor=ft.colors.GREY_50,
+            padding=30,
+            expand=True,
+            border_radius=15
+        )
+        
+        # Assemblage final du Dashboard (Menu + Contenu)
+        self.controls = [
+            self.sidebar,
+            self.main_content
+        ]
